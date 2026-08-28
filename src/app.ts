@@ -5,12 +5,16 @@ import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { barbershops, users } from "./db/schema";
 import cookieParser from "cookie-parser";
+import path from "node:path";
 
 const app = express();
+const publicPath = path.join(__dirname, "public");
+
 app.use(express.json());
-app.use(express.static("src/public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(express.static(publicPath));
 
 app.get("/", (request: Request, response: Response) => {
   return response.sendFile("index.html", {

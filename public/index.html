@@ -1,0 +1,253 @@
+<!doctype html>
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SmartBarber</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+        background: #f5f5f5;
+        color: #222;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+      }
+
+      section {
+        background: #fff;
+        padding: 24px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      label {
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 5px;
+      }
+
+      button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 5px;
+        background: #222;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #444;
+      }
+
+      .message {
+        margin-top: 15px;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>SmartBarber</h1>
+
+    <section>
+      <h2>Cadastrar usuário</h2>
+
+      <form id="user-form">
+        <div>
+          <label for="email">E-mail</label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="seu@email.com"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="password">Senha</label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
+        <button type="submit">Cadastrar usuário</button>
+      </form>
+
+      <p id="user-message" class="message"></p>
+    </section>
+
+    <section>
+      <h2>Cadastrar barbershop</h2>
+
+      <form id="barbershop-form">
+        <div>
+          <label for="name">Nome</label>
+
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Nome da barbearia"
+            required
+          />
+        </div>
+
+        <button type="submit">Cadastrar barbershop</button>
+      </form>
+
+      <p id="barbershop-message" class="message"></p>
+    </section>
+
+    <section>
+      <h2>Barbershops</h2>
+
+      <button id="load-barbershops">Carregar barbershops</button>
+
+      <ul id="barbershops"></ul>
+    </section>
+
+    <script>
+      const userForm = document.getElementById("user-form");
+      const userMessage = document.getElementById("user-message");
+
+      const barbershopForm = document.getElementById("barbershop-form");
+
+      const barbershopMessage = document.getElementById("barbershop-message");
+
+      // ====================
+      // User
+      // ====================
+
+      userForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const response = await fetch("/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          userMessage.textContent =
+            data.message || "Erro ao cadastrar usuário.";
+
+          return;
+        }
+
+        userMessage.textContent = `Usuário criado com sucesso! ID: ${data.id}`;
+
+        userForm.reset();
+      });
+
+      // ====================
+      // Barbershop
+      // ====================
+
+      barbershopForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById("name").value;
+
+        const response = await fetch("/barbershops", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          barbershopMessage.textContent =
+            data.message || "Erro ao cadastrar barbershop.";
+
+          return;
+        }
+
+        barbershopMessage.textContent = `Barbershop "${data.name}" criada com sucesso!`;
+
+        barbershopForm.reset();
+      });
+
+      // ====================
+      // List barbershops
+      // ====================
+
+      const button = document.getElementById("load-barbershops");
+
+      const list = document.getElementById("barbershops");
+
+      button.addEventListener("click", async () => {
+        const response = await fetch("/barbershops");
+
+        const barbershops = await response.json();
+
+        list.innerHTML = "";
+
+        barbershops.forEach((barbershop) => {
+          const item = document.createElement("li");
+
+          item.textContent = `${barbershop.id} - ${barbershop.name}`;
+
+          list.appendChild(item);
+        });
+      });
+    </script>
+  </body>
+</html>
